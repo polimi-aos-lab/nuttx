@@ -25,6 +25,7 @@
 #include <nuttx/timers/arch_alarm.h>
 
 #include "arm64_arch_timer.h"
+#include "debug.h"
 
 /****************************************************************************
  * Public Functions
@@ -52,6 +53,7 @@ static inline uint64_t arm_arch_timer_get_cntfrq(void)
   return MRS(CNTFRQ_EL0);
 }
 
+extern void reboot(void);
 void reboot_test_finished(void);
 void reboot_test_finished()
 {
