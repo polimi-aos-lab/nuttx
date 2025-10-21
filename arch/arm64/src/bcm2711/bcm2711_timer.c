@@ -52,6 +52,21 @@ static inline uint64_t arm_arch_timer_get_cntfrq(void)
   return MRS(CNTFRQ_EL0);
 }
 
+void reboot_test_finished(void);
+void reboot_test_finished()
+{
+#ifdef CONFIG_RUNNING_ON_XEN
+  // we need to do the syscall
+  register uint64_t x0 asm("x0") = 44;
+  register uint64_t x16 asm("x16") = 44;
+
+  asm volatile ("hvc #0xEA1" : "=r"(x0) : "r" (x0), "r" (x16));
+#else
+  _alert("\n\n\nreboot now\n\n\n");
+  reboot();
+#endif
+}
+
 #include <stdio.h>
 
 unsigned long get_current_nanosecond(void);
