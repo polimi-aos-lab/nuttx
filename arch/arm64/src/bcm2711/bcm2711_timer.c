@@ -96,8 +96,8 @@ unsigned long get_affinity(void)
 int get_current_timer_nanoseconds(clockid_t, struct timespec *time)
 {
   uint64_t nanoseconds = get_current_nanosecond();
-  time->tv_sec = nanoseconds / 1000000000UL;
-  time->tv_nsec = nanoseconds % 1000000000UL;
+  time->tv_sec = 0;
+  time->tv_nsec = nanoseconds;
 
   //printf("nanoseconds: %ld; time->tv_sec: %ld; time->tv_nsec: %ld\n", nanoseconds, time->tv_sec, time->tv_nsec);
 
