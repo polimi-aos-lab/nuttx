@@ -37,6 +37,55 @@
     _temp;\
 })
 
+#define STR(str) #str
+#define MSR(reg, var) __asm__ volatile("msr " STR(reg)  ", %0\n\r" ::"r"(var))
+#define DMB(shdmn) __asm__ volatile("dmb " #shdmn "\n\t" ::: "memory")
+#define DSB(shdmn) __asm__ volatile("dsb " #shdmn "\n\t" ::: "memory")
+#define ISB() __asm__ volatile("isb\n\t" ::: "memory")
+
+static inline void pmu_counter_enable(size_t counter) {
+    MSR(PMCNTENSET_EL0, 1UL << counter);
+}
+
+static inline void fence_sync_write()
+{
+    DSB(ishst);
+}
+
+static inline unsigned long pmu_counter_get(size_t counter)
+{
+    MSR(PMSELR_EL0, counter);
+    //barrier?
+    return MRS(PMXEVCNTR_EL0);
+}
+
+
+
+unsigned long get_l1_cache_misses ()
+{
+  return pmu_counter_get(0);
+}
+
+unsigned long get_l2_cache_misses ()
+{
+  return pmu_counter_get(1);
+}
+
+unsigned long get_l3_cache_misses ()
+{
+  return pmu_counter_get(2);
+}
+
+unsigned long get_tlb_d_misses ()
+{
+  return pmu_counter_get(3);
+}
+
+unsigned long get_tlb_i_misses ()
+{
+  return pmu_counter_get(4);
+}
+
 static inline uint64_t arm64_arch_get_cpu_counter(void)
 {
   return MRS(PMCCNTR_EL0);
@@ -104,6 +153,13 @@ int get_current_timer_nanoseconds(clockid_t, struct timespec *time)
   return 0;
 }
 
+static inline void pmu_counter_set_event(size_t counter, size_t event)
+{
+    MSR(PMSELR_EL0, counter);
+    fence_sync_write();
+    MSR(PMXEVTYPER_EL0, event);
+}
+
 void up_timer_initialize(void)
 {
   frequency = arm_arch_timer_get_cntfrq();
@@ -127,6 +183,25 @@ void up_timer_initialize(void)
 
   // 5. (Opzionale) ISB per sincronizzare scritture dei registri di sistema
   asm volatile("isb");
+
+#define CACHE_L1 3
+#define CACHE_L2 23
+#define CACHE_L3 42
+#define DTLB_WALKa 52
+#define ITLB_WALKa 53
+  
+  pmu_counter_set_event(0, 0x3 | (1 << 27));
+  pmu_counter_set_event(1, 23 | (1 << 27));
+  pmu_counter_set_event(2, 42 | (1 << 27));
+  pmu_counter_set_event(3, DTLB_WALKa  | (1 << 27));
+  pmu_counter_set_event(4, ITLB_WALKa  | (1 << 27));
+  
+  pmu_counter_enable(0);
+  pmu_counter_enable(1);
+  pmu_counter_enable(2);
+  pmu_counter_enable(3);
+  pmu_counter_enable(4);
+
 
   up_alarm_set_lowerhalf(arm64_oneshot_initialize());
 }
