@@ -60,20 +60,24 @@ static inline unsigned long pmu_counter_get(size_t counter)
 }
 
 
+#define COUNTER_L1_CACHE_MISS 0
+#define COUNTER_L2_CACHE_MISS 1
+#define COUNTER_L3_CACHE_MISS 2
+
 
 unsigned long get_l1_cache_misses ()
 {
-  return pmu_counter_get(0);
+  return pmu_counter_get(COUNTER_L1_CACHE_MISS);
 }
 
 unsigned long get_l2_cache_misses ()
 {
-  return pmu_counter_get(1);
+  return pmu_counter_get(COUNTER_L2_CACHE_MIS);
 }
 
 unsigned long get_l3_cache_misses ()
 {
-  return pmu_counter_get(2);
+  return pmu_counter_get(COUNTER_L3_CACHE_MISS);
 }
 
 unsigned long get_tlb_d_misses ()
@@ -184,17 +188,18 @@ void up_timer_initialize(void)
   // 5. (Opzionale) ISB per sincronizzare scritture dei registri di sistema
   asm volatile("isb");
 
-#define CACHE_L1 3
-#define CACHE_L2 23
-#define CACHE_L3 42
+#define CACHE_L1 0x3
+#define CACHE_L2 0x17
+#define CACHE_L3 0x2a
 #define DTLB_WALKa 52
 #define ITLB_WALKa 53
-  
-  pmu_counter_set_event(0, 0x3 | (1 << 27));
-  pmu_counter_set_event(1, 23 | (1 << 27));
-  pmu_counter_set_event(2, 42 | (1 << 27));
-  pmu_counter_set_event(3, DTLB_WALKa  | (1 << 27));
-  pmu_counter_set_event(4, ITLB_WALKa  | (1 << 27));
+#define WITH_EL2 (1 << 27)
+
+  pmu_counter_set_event(COUNTER_L1_CACHE_MISS, CACHE_L1);
+  pmu_counter_set_event(COUNTER_L2_CACHE_MISS, CACHE_L2);
+  pmu_counter_set_event(COUNTER_L3_CACHE_MISS, CACHE_L3);
+  pmu_counter_set_event(3, DTLB_WALKa);
+  pmu_counter_set_event(4, ITLB_WALKa);
   
   pmu_counter_enable(0);
   pmu_counter_enable(1);
