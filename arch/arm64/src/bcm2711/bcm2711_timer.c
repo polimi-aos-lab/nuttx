@@ -72,7 +72,7 @@ unsigned long get_l1_cache_misses ()
 
 unsigned long get_l2_cache_misses ()
 {
-  return pmu_counter_get(COUNTER_L2_CACHE_MIS);
+  return pmu_counter_get(COUNTER_L2_CACHE_MISS);
 }
 
 unsigned long get_l3_cache_misses ()
