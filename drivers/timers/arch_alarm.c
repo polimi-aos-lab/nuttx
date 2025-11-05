@@ -44,9 +44,14 @@ static clock_t g_current_tick;
  * Private Functions
  ****************************************************************************/
 
+ #include "debug.h"
 static void oneshot_callback(FAR struct oneshot_lowerhalf_s *lower,
                              FAR void *arg)
 {
+#ifdef CONFIG_RP5_TIMER_DISABLE
+  return;
+#endif
+
   clock_t now = 0;
 
   ONESHOT_TICK_CURRENT(g_oneshot_lower, &now);
@@ -58,6 +63,13 @@ static void oneshot_callback(FAR struct oneshot_lowerhalf_s *lower,
    * the retrieving the current tick and starting the new one could be done
    * atomically w. respect to a HW timer
    */
+
+   static int i = 0;
+   i++;
+   if (i > 1000) {
+    i = 0;
+    _alert("prova\n");
+   }
 
   ONESHOT_TICK_START(g_oneshot_lower, oneshot_callback, NULL, 1);
 
