@@ -64,13 +64,6 @@ static void oneshot_callback(FAR struct oneshot_lowerhalf_s *lower,
    * atomically w. respect to a HW timer
    */
 
-   static int i = 0;
-   i++;
-   if (i > 1000) {
-    i = 0;
-    _alert("prova\n");
-   }
-
   ONESHOT_TICK_START(g_oneshot_lower, oneshot_callback, NULL, 1);
 
   /* It is always an error if this progresses more than 1 tick at a time.
