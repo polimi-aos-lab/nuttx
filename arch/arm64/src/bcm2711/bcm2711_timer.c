@@ -60,10 +60,11 @@ static inline unsigned long pmu_counter_get(size_t counter)
 }
 
 
-#define COUNTER_L1_CACHE_MISS 0
-#define COUNTER_L2_CACHE_MISS 1
-#define COUNTER_L3_CACHE_MISS 2
-
+#define COUNTER_L1_CACHE_MISS  0
+#define COUNTER_L2_CACHE_MISS  1
+#define COUNTER_L3_CACHE_MISS  2
+#define COUNTER_STALL_FRONTEND 3
+#define COUNTER_STALL_BACKEND  4
 
 unsigned long get_l1_cache_misses ()
 {
@@ -78,6 +79,16 @@ unsigned long get_l2_cache_misses ()
 unsigned long get_l3_cache_misses ()
 {
   return pmu_counter_get(COUNTER_L3_CACHE_MISS);
+}
+
+unsigned long get_stall_frontend ()
+{
+  return pmu_counter_get(COUNTER_STALL_FRONTEND);
+}
+
+unsigned long get_stall_backend ()
+{
+  return pmu_counter_get(COUNTER_STALL_BACKEND);
 }
 
 unsigned long get_tlb_d_misses ()
@@ -193,13 +204,16 @@ void up_timer_initialize(void)
 #define CACHE_L3 0x2a
 #define DTLB_WALKa 52
 #define ITLB_WALKa 53
+#define STALL_FRONTEND  0x23
+#define STALL_BACKEND   0x24
+
 #define WITH_EL2 (1 << 27)
 
   pmu_counter_set_event(COUNTER_L1_CACHE_MISS, CACHE_L1);
   pmu_counter_set_event(COUNTER_L2_CACHE_MISS, CACHE_L2);
   pmu_counter_set_event(COUNTER_L3_CACHE_MISS, CACHE_L3);
-  pmu_counter_set_event(3, DTLB_WALKa);
-  pmu_counter_set_event(4, ITLB_WALKa);
+  pmu_counter_set_event(COUNTER_STALL_FRONTEND, STALL_FRONTEND);
+  pmu_counter_set_event(COUNTER_STALL_BACKEND, STALL_BACKEND);
   
   pmu_counter_enable(0);
   pmu_counter_enable(1);
